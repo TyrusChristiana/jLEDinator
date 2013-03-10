@@ -37,19 +37,23 @@ function setLedContainer(newledWidth, newledHeight, newledFrequency) {
 	}
 	$(".ledContainer").css("width", newledWidth);
 	$(".ledContainer").css("height", newledHeight);
-	//alert(newledWidth/newledFrequency);
+
 	var childLedContainer = {
 		'clWidth' : newledWidth/newledFrequency - 1,
 		'clHeight' : newledHeight/newledFrequency,
 		'clCornerRadius' : newledWidth/newledFrequency/2
 	};
 
+	//Generate the HTML to display as an array
+	var ledContent = [];
 	for (var i = newledFrequency - 1; i >= 0; i--) {
-		$(".ledContainer").append('<div class="childLedContainer" style="display:block; background-color:' + generateRandomColor() + ';width:' + childLedContainer["clWidth"] + 'px; height:' + childLedContainer["clHeight"] + 'px;"></div>');
-	};
+		ledContent.push('<div class="childLedContainer" style="display:block; -moz-border-radius:' + childLedContainer["clCornerRadius"] + 'px; -webkit-border-radius: ' + childLedContainer["clCornerRadius"]  + 'px; background-color:' + generateRandomColor() + ';width:' + childLedContainer["clWidth"] + 'px; height:' + childLedContainer["clHeight"] + 'px;"></div>');
+	}
+	$(".ledContainer").append(ledContent.join("")); //jam in the container
 
-	$(".childLedContainer").css("-moz-border-radius", childLedContainer["clCornerRadius"]);
-	$(".childLedContainer").css("-webkit-border-radius", childLedContainer["clCornerRadius"]);
+
+	//$(".childLedContainer").css("-moz-border-radius", childLedContainer["clCornerRadius"]);
+	//$(".childLedContainer").css("-webkit-border-radius", childLedContainer["clCornerRadius"]);
 
 }
 
