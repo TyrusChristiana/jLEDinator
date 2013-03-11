@@ -26,6 +26,7 @@ $(document).ready(function () {
     defaultWidth = 100;
     defaultHeight = 100;
     defaultXFrequency = 1;
+    useImage = false;
     //Set the image to scan colors. For some reason this has to happen at the top of the scope or you get all #000000s
     context = ledCanvas.getContext('2d');
     img = new Image();
@@ -59,6 +60,7 @@ function initApplication() {
     });
     //IMG Scan Button
     $("#imgButton").click(function(){
+        useImage = true;
         //NEEDS imagePath, containerWidth, containerHeight, widthFrequency, heightFrequency
         if(!ledContainerWidth == 0){
             ledImgColorArray = getColorsFromPic(ledContainerWidth, ledContainerHeight, ledXFrequency, ledYFrequency);
@@ -89,9 +91,14 @@ function setLedContainer(newLedWidth, newLedHeight, newLedXFrequency) {
     //Generate the HTML to display as an array
     var ledContent = [];
     for (var i = (newLedXFrequency * newLedXFrequency) - 1; i >= 0; i--) {
-        bgColor = ledImgColorArray[i];
-        console.log(ledImgColorArray[i]);
-        ledContent.push('<div class="childLedContainer" style="display:block; -moz-border-radius:' + childLedContainer["clCornerRadius"] + 'px; -webkit-border-radius: ' + childLedContainer["clCornerRadius"]  + 'px; background-color:' + bgColor + ';width:' + childLedContainer["clWidth"] + 'px; height:' + childLedContainer["clHeight"] + 'px;"></div>');
+        bgColor = ledImgColorArray[ledImgColorArray.length - i];
+        //console.log(ledImgColorArray[i]);
+        if(useImage == true){
+            ledContent.push('<div class="childLedContainer" style="display:block; -moz-border-radius:' + childLedContainer["clCornerRadius"] + 'px; -webkit-border-radius: ' + childLedContainer["clCornerRadius"]  + 'px; background-color:' + bgColor + ';width:' + childLedContainer["clWidth"] + 'px; height:' + childLedContainer["clHeight"] + 'px;"></div>');
+        } else {
+            ledContent.push('<div class="childLedContainer" style="display:block; -moz-border-radius:' + childLedContainer["clCornerRadius"] + 'px; -webkit-border-radius: ' + childLedContainer["clCornerRadius"]  + 'px; background-color:' + generateRandomColor() + ';width:' + childLedContainer["clWidth"] + 'px; height:' + childLedContainer["clHeight"] + 'px;"></div>');
+        }
+        
     }
     $(".ledContainer").append(ledContent.join("")); //jam in the container
 
@@ -110,8 +117,8 @@ function generateRandomColor(){
 
 //Work in progress
 function getColorsFromPic(containerWidth, containerHeight, widthFrequency, heightFrequency){
-    var currentXPosition = 0;
-    var currentYPosition = 0;
+    var currentXPosition = widthFrequency;
+    var currentYPosition = heightFrequency;
     var colorBucket = [];
     
     
@@ -121,14 +128,14 @@ function getColorsFromPic(containerWidth, containerHeight, widthFrequency, heigh
         colorBucket.push(hex);
         //Move the position of the color smeller to the next spot
         //console.log("X:" + currentXPosition);
-        if(parseInt(currentXPosition) <= parseInt(containerWidth)){
+        if(parseInt(currentXPosition) <= parseInt(containerWidth) - widthFrequency){
             currentXPosition = parseInt(currentXPosition) + parseInt((ledContainerWidth/widthFrequency));
         } else {
             //This is probably costly and bad.
-            if(parseInt(currentYPosition) <= parseInt(containerHeight)){
-                currentXPosition = 0;
+            if(parseInt(currentYPosition) <= parseInt(containerHeight) - heightFrequency){
+                currentXPosition = widthFrequency;
                 currentYPosition = parseInt(currentYPosition) + parseInt((ledContainerHeight/heightFrequency));
-                //console.log("Y:" + currentYPosition);
+                console.log("Y:" + currentYPosition);
             }
         }
     };
