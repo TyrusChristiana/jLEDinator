@@ -27,3 +27,7 @@
 I had this idea a while back that it would be cool to translate images or color arrays into 
 divs within a container. This is the outcome of that idea.
 
+This version needs to be run on localhost or an actual site. Opening it from the filesystem causes
+Unable to get image data from canvas because the canvas has been tainted by cross-origin data. main.js:118
+Uncaught Error: SecurityError: DOM Exception 18 
+
