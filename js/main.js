@@ -26,10 +26,18 @@ $(document).ready(function () {
     defaultWidth = 100;
     defaultHeight = 100;
     defaultXFrequency = 1;
+    //Set the image to scan colors. For some reason this has to happen at the top of the scope or you get all #000000s
+    context = ledCanvas.getContext('2d');
+    img = new Image();
+    img.onload = function(){
+      context.drawImage(img,0,0);
+    };
+    img.src = "img/image1.jpg";
     //Variables at top of scope
     ledContainerWidth = 0;
     ledContainerHeight = 0;
     ledCanvas = $("canvas")[0];
+    ledImgColorArray = [];
     //Init
     initApplication();
 });
@@ -39,9 +47,10 @@ function initApplication() {
     //Button
     $("#setButton").click(function() {
         //setup vars
-        var ledWidth = $("#controlWidth").val();
-        var ledHeight = $("#controlHeight").val();
+        ledWidth = $("#controlWidth").val();
+        ledHeight = $("#controlHeight").val();
         ledXFrequency = $("#controlFrequency").val();
+        ledYFrequency = $("#controlFrequency").val();
         setLedContainer(ledWidth, ledHeight, ledXFrequency);
     });
     //Clear Button
@@ -52,8 +61,7 @@ function initApplication() {
     $("#imgButton").click(function(){
         //NEEDS imagePath, containerWidth, containerHeight, widthFrequency, heightFrequency
         if(!ledContainerWidth == 0){
-            var ledYFrequency = ledContainerHeight/ledXFrequency;
-            getColorsFromPic("img/image1.jpg", ledContainerWidth, ledContainerHeight, ledXFrequency, ledYFrequency);
+            ledImgColorArray = getColorsFromPic(ledContainerWidth, ledContainerHeight, ledXFrequency, ledYFrequency);
         }
     });
 }
@@ -80,8 +88,10 @@ function setLedContainer(newLedWidth, newLedHeight, newLedXFrequency) {
 
     //Generate the HTML to display as an array
     var ledContent = [];
-    for (var i = newLedXFrequency - 1; i >= 0; i--) {
-        ledContent.push('<div class="childLedContainer" style="display:block; -moz-border-radius:' + childLedContainer["clCornerRadius"] + 'px; -webkit-border-radius: ' + childLedContainer["clCornerRadius"]  + 'px; background-color:' + generateRandomColor() + ';width:' + childLedContainer["clWidth"] + 'px; height:' + childLedContainer["clHeight"] + 'px;"></div>');
+    for (var i = (newLedXFrequency * newLedXFrequency) - 1; i >= 0; i--) {
+        bgColor = ledImgColorArray[i];
+        console.log(ledImgColorArray[i]);
+        ledContent.push('<div class="childLedContainer" style="display:block; -moz-border-radius:' + childLedContainer["clCornerRadius"] + 'px; -webkit-border-radius: ' + childLedContainer["clCornerRadius"]  + 'px; background-color:' + bgColor + ';width:' + childLedContainer["clWidth"] + 'px; height:' + childLedContainer["clHeight"] + 'px;"></div>');
     }
     $(".ledContainer").append(ledContent.join("")); //jam in the container
 
@@ -99,32 +109,33 @@ function generateRandomColor(){
 }
 
 //Work in progress
-function getColorsFromPic(imagePath, containerWidth, containerHeight, widthFrequency, heightFrequency){
+function getColorsFromPic(containerWidth, containerHeight, widthFrequency, heightFrequency){
     var currentXPosition = 0;
     var currentYPosition = 0;
     var colorBucket = [];
-    var context = ledCanvas.getContext('2d');
-    var img = new Image();
-    img.onload = function(){
-      context.drawImage(img,0,0); // Or at whatever offset you like
-    };
-    img.src = imagePath;
     
-    for (var i = (widthFrequency * heightFrequency) - 1; i >= 0; i--) {
+    
+    for (var i = (parseInt(widthFrequency) * parseInt(heightFrequency)) - 1; i >= 0; i--) {
         var imgData = context.getImageData(currentXPosition, currentYPosition, img.width, img.height).data;
         var hex = "#" + ("000000" + rgbToHex(imgData[0], imgData[1], imgData[2])).slice(-6);
         colorBucket.push(hex);
         //Move the position of the color smeller to the next spot
-        if(!currentXPosition > containerWidth){
-            currentXPosition = currentXPosition + (ledContainerWidth/widthFrequency);
+        //console.log("X:" + currentXPosition);
+        if(parseInt(currentXPosition) <= parseInt(containerWidth)){
+            currentXPosition = parseInt(currentXPosition) + parseInt((ledContainerWidth/widthFrequency));
         } else {
-            currentXPosition = 0;
-            currentYPosition = currentYPosition + (ledContainerHeight/heightFrequency);
+            //This is probably costly and bad.
+            if(parseInt(currentYPosition) <= parseInt(containerHeight)){
+                currentXPosition = 0;
+                currentYPosition = parseInt(currentYPosition) + parseInt((ledContainerHeight/heightFrequency));
+                //console.log("Y:" + currentYPosition);
+            }
         }
     };
     //Debug Info
-    console.log(colorBucket.join(""));
-    console.log(colorBucket.length);
+    //console.log(colorBucket.join(""));
+    //console.log(colorBucket.length);
+    return colorBucket;
 }
 function rgbToHex(r, g, b) {
     if (r > 255 || g > 255 || b > 255)
